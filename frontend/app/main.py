@@ -7,7 +7,9 @@ This module defines a simple Flask application that serves as the frontend for t
 from flask import Flask, render_template
 import requests  # Import the requests library to make HTTP requests
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField
+from wtforms import StringField, SubmitField, IntegerField
+
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key'  # Replace with a secure secret key
@@ -17,9 +19,17 @@ FASTAPI_BACKEND_HOST = 'http://backend'  # Replace with the actual URL of your F
 BACKEND_URL = f'{FASTAPI_BACKEND_HOST}/query/'
 
 
-class QueryForm(FlaskForm):
-    person_name = StringField('Person Name:')
-    submit = SubmitField('Get Birthday from FastAPI Backend')
+# Class for the form to input Comune and Year
+class WasteQueryForm(FlaskForm):
+    comune = StringField('Comune:')
+    year = IntegerField('Year:')
+    submit = SubmitField('Get Total Waste')
+
+#Class for function 3
+class MunicipalitiesQueryForm(FlaskForm):
+    year = IntegerField('Year:')
+    submit = SubmitField('Find Municipalities')
+
 
 
 @app.route('/')
@@ -51,33 +61,82 @@ def fetch_date_from_backend():
         return 'Date not available'
 
 
+# function 1
 @app.route('/internal', methods=['GET', 'POST'])
 def internal():
     """
-    Render the internal page.
-
-    Returns:
-        str: Rendered HTML content for the index page.
+    Render the internal page for querying total waste and display results.
     """
-    form = QueryForm()
-    error_message = None  # Initialize error message
+    form = WasteQueryForm()
+    total_waste_result = None
+    error_message = None
 
     if form.validate_on_submit():
-        person_name = form.person_name.data
+        comune = form.comune.data
+        year = form.year.data
 
         # Make a GET request to the FastAPI backend
-        fastapi_url = f'{FASTAPI_BACKEND_HOST}/query/{person_name}'
+        fastapi_url = f'{FASTAPI_BACKEND_HOST}/total_waste/{comune}/{year}'
+        response = requests.get(fastapi_url)
+            
+        if response.status_code == 200:
+            data = response.json()
+            total_waste_result = data.get('total_waste', 'No data available')
+        else:
+            error_message = f'Error: Unable to fetch total waste data for {comune} in {year}'
+
+    # This will render the same internal.html page with the form and result
+    return render_template('internal.html', form=form, total_waste_result=total_waste_result, error_message=error_message)
+
+
+# function 2
+@app.route('/total_waste_all_years', methods=['GET', 'POST'])
+def total_waste_all_years_query():
+    form = WasteQueryForm()  
+    total_waste_data = None
+    error_message = None
+
+    if form.validate_on_submit():
+        comune = form.comune.data
+
+        # Construct the URL for the FastAPI backend
+        fastapi_url = f'{FASTAPI_BACKEND_HOST}/total_waste_all_years/{comune}'
         response = requests.get(fastapi_url)
 
         if response.status_code == 200:
-            # Extract and display the result from the FastAPI backend
             data = response.json()
-            result = data.get('birthday', f'Error: Birthday not available for {person_name}')
-            return render_template('internal.html', form=form, result=result, error_message=error_message)
+            total_waste_data = data.get('total_waste_data', {})
         else:
-            error_message = f'Error: Unable to fetch birthday for {person_name} from FastAPI Backend'
+            error_message = "Error fetching data from backend."
 
-    return render_template('internal.html', form=form, result=None, error_message=error_message)
+    return render_template('internal.html', form=form, total_waste_data=total_waste_data, error_message=error_message)
+
+
+#function 3
+# Form class for the waste data request
+
+@app.route('/find_municipalities_by_waste', methods=['GET', 'POST'])
+def find_municipalities_by_waste():
+    form = MunicipalitiesQueryForm()
+    result = None
+    error_message = None
+
+    if form.validate_on_submit():
+        year = form.year.data
+
+        # Construct the URL for the FastAPI backend
+        fastapi_url = f'{FASTAPI_BACKEND_HOST}/find_municipalities_by_waste/{year}'
+        response = requests.get(fastapi_url)
+
+        if response.status_code == 200:
+            data = response.json()
+            result = data
+        else:
+            error_message = f"Error: Unable to fetch data for the year {year}"
+
+    return render_template('find_municipalities.html', form=form, result=result, error_message=error_message)
+
+
 
 
 if __name__ == '__main__':
