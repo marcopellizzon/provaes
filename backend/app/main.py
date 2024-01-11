@@ -6,31 +6,19 @@ as the backend for the project.
 """
 
 from fastapi import FastAPI
-from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from datetime import datetime
 import pandas as pd
 
+from .mymodules.birthdays import total_waste
+from .mymodules.birthdays import total_waste_all_years
+from .mymodules.birthdays import find_municipalities_by_waste
 
-from .mymodules.birthdays import return_birthday, print_birthdays_str
 
 app = FastAPI()
 
-# Dictionary of birthdays
-birthdays_dictionary = {
-    'Albert Einstein': '03/14/1879',
-    'Benjamin Franklin': '01/17/1706',
-    'Ada Lovelace': '12/10/1815',
-    'Donald Trump': '06/14/1946',
-    'Rowan Atkinson': '01/6/1955'
-}
 
-df = pd.read_csv('/app/app/employees.csv')
-
-@app.get('/csv_show')
-def read_and_return_csv():
-    aux = df['Age'].values
-    return{"Age": str(aux.argmin())}
+df = pd.read_csv('/app/app/filedati.csv')
 
 @app.get('/')
 def read_root():
@@ -42,34 +30,58 @@ def read_root():
     """
     return {"Hello": "World"}
 
-
-@app.get('/query/{person_name}')
-def read_item(person_name: str):
+# function 1 - total_waste (comune, year)
+@app.get('/total_waste/{comune}/{year}')
+def get_total_waste(comune: str, year: int):
     """
-    Endpoint to query birthdays based on person_name.
+    Endpoint to retrieve total waste for a given comune and year.
 
     Args:
-        person_name (str): The name of the person.
+        comune (str): Name of the Comune
+        year (int): Year of interest
 
     Returns:
-        dict: Birthday information for the provided person_name.
+        dict: Total waste in Kg or a message if not found
     """
-    person_name = person_name.title()  # Convert to title case for consistency
-    birthday = birthdays_dictionary.get(person_name)
-    if birthday:
-        return {"person_name": person_name, "birthday": birthday}
-    else:
-        return {"error": "Person not found"}
+    # Assuming the CSV file path is fixed, you can hardcode or configure it here
+    csv_file_path = '/app/app/filedati.csv'
+    waste = total_waste(comune, year, csv_file_path)
+    return {"comune": comune, "year": year, "total_waste": waste}
+
+# function 2
+@app.get('/total_waste_all_years/{comune}')
+def get_total_waste_all_years(comune: str):
+    """
+    Endpoint to retrieve total waste for all years for a given comune.
+
+    Args:
+        comune (str): Name of the Comune
+
+    Returns:
+        dict: Total waste in Kg for all years or a message if not found
+    """
+    csv_file_path = '/app/app/filedati.csv'
+    waste_data = total_waste_all_years(comune, csv_file_path)
+    return {"comune": comune, "total_waste_data": waste_data}
+
+# function 3
+@app.get('/find_municipalities_by_waste/{year}')
+def get_find_municipalities_by_waste(year: int):
+    """
+    Endpoint to retrieve the municipalities with the highest and lowest waste per capita for a given year.
+
+    Args:
+        year (int): Year of interest
+
+    Returns:
+        JSONResponse: Contains the municipalities with the highest and lowest waste per capita.
+    """
+    csv_file_path = '/app/app/filedati.csv'
+    highest, lowest = find_municipalities_by_waste(csv_file_path, year)
+    return JSONResponse(content={"Year": year, "Highest Waste Per Capita": highest, "Lowest Waste Per Capita": lowest})
 
 
-@app.get('/module/search/{person_name}')
-def read_item_from_module(person_name: str):
-    return {return_birthday(person_name)}
 
-
-@app.get('/module/all')
-def dump_all_birthdays():
-    return {print_birthdays_str()}
 
 
 @app.get('/get-date')
