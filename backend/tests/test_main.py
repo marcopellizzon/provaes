@@ -21,29 +21,26 @@ def test_read_main():
     assert response.status_code == 200
     assert response.json() == {"Hello": "World"}
 
-
-def test_success_read_item():
-    response = client.get("/query/Albert Einstein")
+def test_root_endpoint():
+    response = client.get("/")
     assert response.status_code == 200
-    assert response.json() == {"person_name": 'Albert Einstein', 
-                               "birthday": '03/14/1879'}
 
-
-""" def test_fail_read_item():
-    response = client.get("/query/Pippo")
+def test_total_waste():
+    response = client.get("/total_waste/Comune1/2020")
     assert response.status_code == 200
-    assert response.json() == {"error": "Person not found"} """
+    # Add more assertions based on expected response
 
-
-# The following will generate an error in pycheck
-""" def test_success_read_item_module():
-    response = client.get("/module/search/Albert Einstein")
+def test_total_waste_all_years():
+    response = client.get("/total_waste_all_years/Comune1")
     assert response.status_code == 200
-    assert response.json() == {"Albert Einstein's birthday is 03/14/1879."} """
+    # Additional assertions
 
-
-# The following is correct, can you spot the diffence?
-def test_success_read_item_module():
-    response = client.get("/module/search/Albert Einstein")
+def test_find_municipalities_by_waste():
+    response = client.get("/find_municipalities_by_waste?waste_amount=1000")
     assert response.status_code == 200
-    assert response.json() == ["Albert Einstein's birthday is 03/14/1879."]
+    # More assertions based on expected output
+
+def test_invalid_input():
+    response = client.get("/total_waste/InvalidComune/2020")
+    assert response.status_code == 404
+    # Or any other expected status code
