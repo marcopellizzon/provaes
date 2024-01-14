@@ -16,7 +16,8 @@ def total_waste(comune, year, data):
     """
     
     # Load the CSV file with the correct delimiter
-    data = pd.read_csv('/app/app/filedati.csv', delimiter=';')
+    data = pd.read_csv('app/filedati.csv', delimiter=';')
+
 
     # Filter data for the given comune and year
     filtered_data = data[(data['Comune'] == comune) & (data['Anno'] == year)]
@@ -46,7 +47,7 @@ def total_waste_all_years(comune, data):
     :param file_path: Path to the CSV file
     :return: Dictionary with years as keys and total waste in Kg as values
     """
-    data = pd.read_csv('/app/app/filedati.csv', delimiter=';')
+    data = pd.read_csv('app/filedati.csv', delimiter=';')
     filtered_data = data[data['Comune'] == comune]
 
     if filtered_data.empty:
@@ -67,7 +68,7 @@ def find_municipalities_by_waste(data, year):
     Returns:
     - A tuple containing the municipalities with the highest and lowest waste per capita.
     """
-    data = pd.read_csv('/app/app/filedati.csv', delimiter=';')
+    data = pd.read_csv('app/filedati.csv', delimiter=';')
     # Filter the data for the given year
     year_data = data[data['Anno'] == year]
 
