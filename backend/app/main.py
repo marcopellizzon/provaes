@@ -60,7 +60,7 @@ def get_total_waste_all_years(comune: str):
     Returns:
         dict: Total waste in Kg for all years or a message if not found
     """
-    csv_file_path = '/app/app/filedati.csv'
+    csv_file_path = 'app/filedati.csv'
     waste_data = total_waste_all_years(comune, csv_file_path)
     return {"comune": comune, "total_waste_data": waste_data}
 
