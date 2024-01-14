@@ -18,7 +18,7 @@ from .mymodules.birthdays import find_municipalities_by_waste
 app = FastAPI()
 
 
-df = pd.read_csv('/app/app/filedati.csv')
+df = pd.read_csv('app/filedati.csv')
 
 @app.get('/')
 def read_root():
@@ -44,7 +44,7 @@ def get_total_waste(comune: str, year: int):
         dict: Total waste in Kg or a message if not found
     """
     # Assuming the CSV file path is fixed, you can hardcode or configure it here
-    csv_file_path = '/app/app/filedati.csv'
+    csv_file_path = 'app/filedati.csv'
     waste = total_waste(comune, year, csv_file_path)
     return {"comune": comune, "year": year, "total_waste": waste}
 
@@ -76,7 +76,7 @@ def get_find_municipalities_by_waste(year: int):
     Returns:
         JSONResponse: Contains the municipalities with the highest and lowest waste per capita.
     """
-    csv_file_path = '/app/app/filedati.csv'
+    csv_file_path = 'app/filedati.csv'
     highest, lowest = find_municipalities_by_waste(csv_file_path, year)
     return JSONResponse(content={"Year": year, "Highest Waste Per Capita": highest, "Lowest Waste Per Capita": lowest})
 
